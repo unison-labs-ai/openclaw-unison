@@ -11,6 +11,7 @@ import { buildRecallHandler } from "./hooks/recall.ts"
 import { initLogger } from "./logger.ts"
 import { buildMemoryRuntime, buildPromptSection } from "./runtime.ts"
 import { registerForgetTool } from "./tools/forget.ts"
+import { registerProfileTool } from "./tools/profile.ts"
 import { registerSearchTool } from "./tools/search.ts"
 import { registerStatusTool } from "./tools/status.ts"
 import { registerStoreTool } from "./tools/store.ts"
@@ -73,11 +74,13 @@ export default {
 		registerStoreTool(api, client, cfg)
 		registerForgetTool(api, client, cfg)
 		registerStatusTool(api, client, cfg)
+		registerProfileTool(api, client, cfg)
 
 		// Register aliased tool names for compatibility with older openclaw slot routing
 		registerSearchTool(api, client, cfg, "unison-search")
 		registerStoreTool(api, client, cfg, "unison-save")
 		registerForgetTool(api, client, cfg, "unison-forget")
+		registerProfileTool(api, client, cfg, "unison-profile")
 
 		const recallHandler = buildRecallHandler(client, cfg)
 		const captureHandler = buildCaptureHandler(client, cfg, getSessionKey)

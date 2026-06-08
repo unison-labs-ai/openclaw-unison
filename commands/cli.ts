@@ -11,6 +11,7 @@ const UNISON_TOOL_NAMES = [
 	"unison_search",
 	"unison_forget",
 	"unison_status",
+	"unison_profile",
 ]
 
 function appendUniqueStrings(value: unknown, entries: string[]): string[] {
@@ -412,6 +413,25 @@ export function registerCli(
 						const excerpt = r.highlight ?? r.tldr ?? ""
 						const excerptPart = excerpt ? ` — ${excerpt}` : ""
 						console.log(`- ${label}${excerptPart}${score}`)
+					}
+				})
+
+			cmd
+				.command("profile")
+				.description("Show the authenticated Unison user identity")
+				.action(async () => {
+					log.debug("cli profile: fetching whoami")
+
+					const w = await client.whoami()
+
+					const email = w.user.email ?? "(no email)"
+					console.log(`User:   ${email} (id: ${w.user.id})`)
+
+					const tenantName = w.tenant.name ?? "(unnamed)"
+					console.log(`Tenant: ${tenantName} (id: ${w.tenant.id})`)
+
+					if (w.scopes.length > 0) {
+						console.log(`Scopes: ${w.scopes.join(", ")}`)
 					}
 				})
 

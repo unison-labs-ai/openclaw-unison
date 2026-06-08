@@ -1,0 +1,71 @@
+{
+	"id": "openclaw-unison",
+	"kind": "memory",
+	"commandAliases": [
+		{
+			"name": "unison",
+			"cliCommand": "unison"
+		}
+	],
+	"contracts": {
+		"tools": ["unison_search", "unison_store", "unison_forget", "unison_status"]
+	},
+	"uiHints": {
+		"apiKey": {
+			"label": "Unison API Key",
+			"sensitive": true,
+			"placeholder": "usk_live_...",
+			"help": "Your API key from app.unisonlabs.ai (or use ${UNISON_TOKEN})"
+		},
+		"brainPath": {
+			"label": "Brain Path Prefix",
+			"placeholder": "/private/openclaw",
+			"help": "Root path for storing conversation notes in the Unison brain. Defaults to /private/openclaw.",
+			"advanced": true
+		},
+		"autoRecall": {
+			"label": "Auto-Recall",
+			"help": "Inject relevant brain documents before every AI turn"
+		},
+		"autoCapture": {
+			"label": "Auto-Capture",
+			"help": "Automatically store important information from conversations into the brain"
+		},
+		"maxRecallResults": {
+			"label": "Max Recall Results",
+			"placeholder": "10",
+			"help": "Maximum brain search results injected into context per turn",
+			"advanced": true
+		},
+		"captureMode": {
+			"label": "Capture Mode",
+			"help": "'all' (default) = filter short texts and injected context, 'everything' = capture all messages",
+			"advanced": true
+		},
+		"debug": {
+			"label": "Debug Logging",
+			"help": "Enable verbose debug logs for API calls and responses",
+			"advanced": true
+		},
+		"showMemoryUsage": {
+			"label": "Show Memory Usage",
+			"help": "Show how many brain documents were loaded and used in AI responses",
+			"advanced": true
+		}
+	},
+	"configSchema": {
+		"type": "object",
+		"additionalProperties": false,
+		"properties": {
+			"apiKey": { "type": "string" },
+			"brainPath": { "type": "string" },
+			"autoRecall": { "type": "boolean" },
+			"autoCapture": { "type": "boolean" },
+			"maxRecallResults": { "type": "number", "minimum": 1, "maximum": 50 },
+			"captureMode": { "type": "string", "enum": ["everything", "all"] },
+			"debug": { "type": "boolean" },
+			"showMemoryUsage": { "type": "boolean" }
+		},
+		"required": []
+	}
+}

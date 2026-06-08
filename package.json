@@ -1,0 +1,62 @@
+{
+	"name": "@unisonlabs/openclaw-unison",
+	"version": "1.0.0",
+	"type": "module",
+	"description": "OpenClaw Unison brain memory plugin",
+	"license": "MIT",
+	"dependencies": {
+		"@sinclair/typebox": "0.34.47",
+		"@unisonlabs/sdk": "^1.3.2"
+	},
+	"files": [
+		"README.md",
+		"openclaw.plugin.json",
+		"index.ts",
+		"client.ts",
+		"commands",
+		"hooks",
+		"tools",
+		"config.ts",
+		"logger.ts",
+		"memory.ts",
+		"runtime.ts",
+		"types",
+		"lib/validate.d.ts",
+		"lib/validate.js",
+		"dist"
+	],
+	"scripts": {
+		"build": "bun run build:runtime && bun run build:lib",
+		"build:runtime": "esbuild index.ts --bundle --format=esm --platform=node --target=es2022 --external:openclaw --external:openclaw/* --external:@unisonlabs/sdk --outfile=dist/index.js",
+		"check-types": "tsc --noEmit",
+		"lint": "bunx @biomejs/biome ci .",
+		"lint:fix": "bunx @biomejs/biome check --write .",
+		"build:lib": "node -e \"const fs=require('node:fs'); fs.accessSync('lib/validate.js'); fs.accessSync('lib/validate.d.ts')\""
+	},
+	"peerDependencies": {
+		"openclaw": ">=2026.5.7"
+	},
+	"openclaw": {
+		"extensions": [
+			"./index.ts"
+		],
+		"runtimeExtensions": [
+			"./dist/index.js"
+		],
+		"compat": {
+			"pluginApi": ">=2026.5.7",
+			"minGatewayVersion": "2026.5.7"
+		},
+		"build": {
+			"openclawVersion": "2026.5.7"
+		}
+	},
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/unison-labs-ai/openclaw-unison.git"
+	},
+	"devDependencies": {
+		"esbuild": "^0.27.2",
+		"typescript": "^5.9.3"
+	}
+}

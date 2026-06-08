@@ -1,0 +1,55 @@
+# openclaw-unison
+
+> OpenClaw plugin that gives the AI long-term memory backed by the Unison brain —
+> hybrid BM25+vector search recalled before every turn, conversations captured
+> automatically, and four AI tools (search, store, forget, status) for the model
+> to read and write the knowledge graph directly.
+
+**Agents: start with [AGENTS.md](AGENTS.md)** — it covers installation,
+authentication with a `usk_` key + `UNISON_BASE_URL`, and the write+recall loop
+this plugin implements.
+
+The plugin enforces nothing client-side; the Unison backend is the security
+boundary. Auth is a machine API key (`usk_...`) via `UNISON_TOKEN` env var or
+the `apiKey` config field. All brain reads/writes go to `PUT /v1/brain/doc` and
+`GET /v1/brain/search`.
+
+## Docs
+- [README.md](README.md): install, setup, env vars, configuration reference, brain path routing
+- [AGENTS.md](AGENTS.md): how an agent installs and uses this plugin; contributing guide
+- [CONTRIBUTING.md](CONTRIBUTING.md): development workflow, conventions, PR checklist
+- [SECURITY.md](SECURITY.md): reporting vulnerabilities
+
+## API contract
+- Brain write: `PUT /v1/brain/doc` — body `{ path, bodyMd, kind, title?, tags[], source? }`
+- Brain search: `GET /v1/brain/search?q=<query>&k=<limit>`
+- Brain status: `GET /v1/brain/status`
+- Auth header: `Authorization: Bearer <usk_key>`
+
+## Usage
+```bash
+# Install the plugin
+openclaw plugins install @unisonlabs/openclaw-unison
+
+# Configure (interactive)
+openclaw unison setup
+openclaw gateway restart
+
+# Or set env var directly
+export UNISON_TOKEN="usk_live_..."
+```
+
+## Examples
+```bash
+# Headless provisioning (dev / CI)
+curl -X POST https://api.unisonlabs.ai/v1/auth/provision \
+  -H "Content-Type: application/json" \
+  -d '{"email":"you@example.com"}'
+# Returns: {"apiKey":"usk_live_...","tenantId":"..."}
+
+# Manual recall
+openclaw unison search "auth decisions"
+
+# Manual remember
+openclaw unison status
+```

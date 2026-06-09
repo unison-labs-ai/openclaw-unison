@@ -31,7 +31,8 @@
 		"check-types": "tsc --noEmit",
 		"lint": "bunx @biomejs/biome ci .",
 		"lint:fix": "bunx @biomejs/biome check --write .",
-		"build:lib": "node -e \"const fs=require('node:fs'); fs.accessSync('lib/validate.js'); fs.accessSync('lib/validate.d.ts')\""
+		"build:lib": "node -e \"const fs=require('node:fs'); fs.accessSync('lib/validate.js'); fs.accessSync('lib/validate.d.ts')\"",
+		"prepack": "bun run build"
 	},
 	"peerDependencies": {
 		"openclaw": ">=2026.5.7"

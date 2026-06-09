@@ -201,6 +201,19 @@ export function registerCli(
 						}
 					}
 
+					const profileFreqInput = await ask(
+						"Inject full profile every N turns (1-500) [50]: ",
+					)
+					let profileFrequency = 50
+					const parsedFreq = Number.parseInt(profileFreqInput.trim(), 10)
+					if (profileFreqInput.trim()) {
+						if (parsedFreq >= 1 && parsedFreq <= 500) {
+							profileFrequency = parsedFreq
+						} else {
+							console.log("  Invalid value, using default: 50")
+						}
+					}
+
 					console.log("\nCapture mode:")
 					console.log(
 						"  all        - Filter short texts and context blocks (recommended)",
@@ -237,6 +250,17 @@ export function registerCli(
 						console.log("  Invalid value, using default: true")
 					}
 
+					console.log("\nEntity context:")
+					console.log(
+						"  Instructions that guide what memories are extracted from conversations.",
+					)
+					console.log(
+						"  Leave blank to use the built-in default (recommended for most users).",
+					)
+					const entityContextInput = await ask(
+						"Entity context (optional, press Enter for default): ",
+					)
+
 					rl.close()
 
 					let config: Record<string, unknown> = {}
@@ -268,8 +292,12 @@ export function registerCli(
 					if (!autoCapture) pluginConfig.autoCapture = false
 					if (maxRecallResults !== 10)
 						pluginConfig.maxRecallResults = maxRecallResults
+					if (profileFrequency !== 50)
+						pluginConfig.profileFrequency = profileFrequency
 					if (captureMode !== "all") pluginConfig.captureMode = captureMode
 					if (!showMemoryUsage) pluginConfig.showMemoryUsage = false
+					if (entityContextInput.trim())
+						pluginConfig.entityContext = entityContextInput.trim()
 
 					entries["openclaw-unison"] = {
 						enabled: true,
@@ -297,8 +325,19 @@ export function registerCli(
 					console.log(`  Auto-recall:      ${autoRecall}`)
 					console.log(`  Auto-capture:     ${autoCapture}`)
 					console.log(`  Max results:      ${maxRecallResults}`)
+					console.log(`  Profile freq:     ${profileFrequency}`)
 					console.log(`  Capture mode:     ${captureMode}`)
 					console.log(`  Memory usage:     ${showMemoryUsage}`)
+					const entityPreview = entityContextInput.trim()
+					if (entityPreview) {
+						const truncated =
+							entityPreview.length > 50
+								? `${entityPreview.slice(0, 50)}...`
+								: entityPreview
+						console.log(`  Entity context:   "${truncated}"`)
+					} else {
+						console.log("  Entity context:   (default)")
+					}
 					console.log("\nRestart OpenClaw to apply: openclaw gateway restart\n")
 				})
 
@@ -364,11 +403,22 @@ export function registerCli(
 						`  Max results:      ${pluginConfig.maxRecallResults ?? 10}`,
 					)
 					console.log(
+						`  Profile freq:     ${pluginConfig.profileFrequency ?? 50}`,
+					)
+					console.log(
 						`  Capture mode:     ${pluginConfig.captureMode ?? "all"}`,
 					)
 					console.log(
 						`  Memory usage:     ${pluginConfig.showMemoryUsage ?? true}`,
 					)
+					const entityCtx = pluginConfig.entityContext as string | undefined
+					if (entityCtx) {
+						const truncated =
+							entityCtx.length > 50 ? `${entityCtx.slice(0, 50)}...` : entityCtx
+						console.log(`  Entity context:   "${truncated}"`)
+					} else {
+						console.log("  Entity context:   (default)")
+					}
 					console.log("")
 
 					if (client) {
@@ -418,20 +468,43 @@ export function registerCli(
 
 			cmd
 				.command("profile")
-				.description("Show the authenticated Unison user identity")
-				.action(async () => {
-					log.debug("cli profile: fetching whoami")
+				.description(
+					"Show a summary of what is known about the user from the brain",
+				)
+				.option("--query <q>", "Optional query to focus the profile")
+				.action(async (opts: { query?: string }) => {
+					log.debug(`cli profile: query="${opts.query ?? "(none)"}"`)
 
-					const w = await client.whoami()
+					const profile = await client.getProfile(opts.query)
 
-					const email = w.user.email ?? "(no email)"
-					console.log(`User:   ${email} (id: ${w.user.id})`)
+					if (
+						profile.static.length === 0 &&
+						profile.dynamic.length === 0 &&
+						profile.searchResults.length === 0
+					) {
+						console.log("No profile information available yet.")
+						return
+					}
 
-					const tenantName = w.tenant.name ?? "(unnamed)"
-					console.log(`Tenant: ${tenantName} (id: ${w.tenant.id})`)
+					if (profile.static.length > 0) {
+						console.log("Stable Facts:")
+						for (const f of profile.static) console.log(`  - ${f}`)
+					}
 
-					if (w.scopes.length > 0) {
-						console.log(`Scopes: ${w.scopes.join(", ")}`)
+					if (profile.dynamic.length > 0) {
+						console.log("Known Entities:")
+						for (const f of profile.dynamic) console.log(`  - ${f}`)
+					}
+
+					if (profile.searchResults.length > 0) {
+						console.log("Relevant Brain Documents:")
+						for (const r of profile.searchResults) {
+							const pct =
+								r.similarity != null
+									? ` (${Math.round(r.similarity * 100)}%)`
+									: ""
+							console.log(`  - ${r.memory ?? ""}${pct}`)
+						}
 					}
 				})
 

@@ -1,4 +1,5 @@
 import { hostname } from "node:os"
+import { DEFAULT_ENTITY_CONTEXT } from "./memory.ts"
 
 export type CaptureMode = "everything" | "all"
 
@@ -9,7 +10,9 @@ export type UnisonConfig = {
 	autoRecall: boolean
 	autoCapture: boolean
 	maxRecallResults: number
+	profileFrequency: number
 	captureMode: CaptureMode
+	entityContext: string
 	debug: boolean
 	showMemoryUsage: boolean
 }
@@ -21,7 +24,9 @@ const ALLOWED_KEYS = [
 	"autoRecall",
 	"autoCapture",
 	"maxRecallResults",
+	"profileFrequency",
 	"captureMode",
+	"entityContext",
 	"debug",
 	"showMemoryUsage",
 ]
@@ -95,10 +100,15 @@ export function parseConfig(raw: unknown): UnisonConfig {
 		autoRecall: (cfg.autoRecall as boolean) ?? true,
 		autoCapture: (cfg.autoCapture as boolean) ?? true,
 		maxRecallResults: (cfg.maxRecallResults as number) ?? 10,
+		profileFrequency: (cfg.profileFrequency as number) ?? 50,
 		captureMode:
 			cfg.captureMode === "everything"
 				? ("everything" as const)
 				: ("all" as const),
+		entityContext:
+			typeof cfg.entityContext === "string" && cfg.entityContext.trim()
+				? cfg.entityContext.trim()
+				: DEFAULT_ENTITY_CONTEXT,
 		debug: (cfg.debug as boolean) ?? false,
 		showMemoryUsage: (cfg.showMemoryUsage as boolean) ?? true,
 	}
@@ -115,7 +125,9 @@ export const unisonConfigSchema = {
 			autoRecall: { type: "boolean" },
 			autoCapture: { type: "boolean" },
 			maxRecallResults: { type: "number", minimum: 1, maximum: 50 },
+			profileFrequency: { type: "number" },
 			captureMode: { type: "string", enum: ["all", "everything"] },
+			entityContext: { type: "string" },
 			debug: { type: "boolean" },
 			showMemoryUsage: { type: "boolean" },
 		},

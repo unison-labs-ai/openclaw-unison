@@ -92,6 +92,10 @@ export function buildCaptureHandler(
 						.map((t) =>
 							t
 								.replace(/<unison-context>[\s\S]*?<\/unison-context>\s*/g, "")
+								.replace(
+									/<unison-containers>[\s\S]*?<\/unison-containers>\s*/g,
+									"",
+								)
 								.trim(),
 						)
 						.filter((t) => t.length >= 10)

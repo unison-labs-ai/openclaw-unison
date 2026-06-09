@@ -1,4 +1,4 @@
-import type { UnisonBrainClient } from "../client.ts"
+import type { ProfileSearchResult, UnisonBrainClient } from "../client.ts"
 import type { UnisonConfig } from "../config.ts"
 import { log } from "../logger.ts"
 import { stripInboundMetadata } from "../memory.ts"
@@ -28,42 +28,122 @@ function formatRelativeTime(isoTimestamp: string): string {
 	}
 }
 
-function formatContext(
-	results: {
-		path: string
-		title: string | null
-		tldr: string | null
-		score: number
-		highlight?: string
-		updatedAt?: string | null
-	}[],
-	maxResults: number,
-	showMemoryUsage: boolean,
-): string | null {
-	const trimmed = results.slice(0, maxResults)
-	if (trimmed.length === 0) return null
+function deduplicateMemories(
+	staticFacts: string[],
+	dynamicFacts: string[],
+	searchResults: ProfileSearchResult[],
+): {
+	static: string[]
+	dynamic: string[]
+	searchResults: ProfileSearchResult[]
+} {
+	const seen = new Set<string>()
 
-	const lines = trimmed.map((r) => {
-		const label = r.title ?? r.path.split("/").pop() ?? r.path
-		const excerpt = r.highlight ?? r.tldr ?? ""
-		const pct = `[${Math.round(r.score * 100)}%]`
-		const timeStr = r.updatedAt ? formatRelativeTime(r.updatedAt) : ""
-		const prefix = timeStr ? `[${timeStr}]` : ""
-		const excerptPart = excerpt ? ` — ${excerpt}` : ""
-		return `- ${prefix}${label}${excerptPart} ${pct}`.trim()
+	const uniqueStatic = staticFacts.filter((m) => {
+		if (seen.has(m)) return false
+		seen.add(m)
+		return true
 	})
 
+	const uniqueDynamic = dynamicFacts.filter((m) => {
+		if (seen.has(m)) return false
+		seen.add(m)
+		return true
+	})
+
+	const uniqueSearch = searchResults.filter((r) => {
+		const memory = r.memory ?? ""
+		if (!memory || seen.has(memory)) return false
+		seen.add(memory)
+		return true
+	})
+
+	return {
+		static: uniqueStatic,
+		dynamic: uniqueDynamic,
+		searchResults: uniqueSearch,
+	}
+}
+
+function formatContainerMetadata(
+	cfg: UnisonConfig,
+	messageProvider?: string,
+): string | null {
+	if (!messageProvider) return null
+
+	const lines: string[] = []
+	lines.push(`Brain path: \`${cfg.brainPath}\``)
+
+	if (messageProvider) {
+		lines.push("")
+		lines.push(`Current channel: ${messageProvider}`)
+	}
+
+	lines.push("")
+	lines.push(
+		"Use the brain path prefix when storing notes to organise memories by topic.",
+	)
+
+	return lines.join("\n")
+}
+
+function formatContext(
+	staticFacts: string[],
+	dynamicFacts: string[],
+	searchResults: ProfileSearchResult[],
+	maxResults: number,
+	showMemoryUsage = true,
+): string | null {
+	const deduped = deduplicateMemories(staticFacts, dynamicFacts, searchResults)
+	const statics = deduped.static.slice(0, maxResults)
+	const dynamics = deduped.dynamic.slice(0, maxResults)
+	const search = deduped.searchResults.slice(0, maxResults)
+
+	if (statics.length === 0 && dynamics.length === 0 && search.length === 0)
+		return null
+
+	const totalMemories = statics.length + dynamics.length + search.length
+
+	const sections: string[] = []
+
+	if (statics.length > 0) {
+		sections.push(
+			"## User Profile (Persistent)\n" +
+				statics.map((f) => `- ${f}`).join("\n"),
+		)
+	}
+
+	if (dynamics.length > 0) {
+		sections.push(
+			`## Recent Context\n${dynamics.map((f) => `- ${f}`).join("\n")}`,
+		)
+	}
+
+	if (search.length > 0) {
+		const lines = search.map((r) => {
+			const memory = r.memory ?? ""
+			const timeStr = r.updatedAt ? formatRelativeTime(r.updatedAt) : ""
+			const pct =
+				r.similarity != null ? `[${Math.round(r.similarity * 100)}%]` : ""
+			const prefix = timeStr ? `[${timeStr}]` : ""
+			return `- ${prefix}${memory} ${pct}`.trim()
+		})
+		sections.push(
+			`## Relevant Memories (with relevance %)\n${lines.join("\n")}`,
+		)
+	}
+
 	const intro =
-		"The following is background context retrieved from the Unison brain (long-term memory). Use this context silently to inform your understanding — only reference it when the user's message is directly related."
+		"The following is background context retrieved from the Unison brain (long-term memory). Use this context silently to inform your understanding — only reference it when the user's message is directly related to something in these memories."
 	const disclaimer =
 		"Do not proactively bring up these memories. Only use them when the conversation naturally calls for it."
 
 	let memoryUsageInstruction = ""
 	if (showMemoryUsage) {
-		memoryUsageInstruction = `\n\nIMPORTANT: At the very beginning of your response, include a brief note indicating how many brain documents from Unison were used to inform your response. Format it as: "[Unison: ${trimmed.length} documents loaded]" — this helps the user understand that OpenClaw is using their Unison brain. If none are relevant, say "[Unison: ${trimmed.length} documents loaded, 0 used]".`
+		memoryUsageInstruction = `\n\nIMPORTANT: At the very beginning of your response, include a brief note indicating how many memories from Unison were used to inform your response. Format it as: "[Unison: ${totalMemories} memories loaded]" — this helps the user understand that OpenClaw is using their Unison brain. If none of the memories are relevant to the current message, say "[Unison: ${totalMemories} memories loaded, 0 used]".`
 	}
 
-	return `<unison-context>\n${intro}\n\n## Relevant Brain Documents\n${lines.join("\n")}\n\n${disclaimer}${memoryUsageInstruction}\n</unison-context>`
+	return `<unison-context>\n${intro}\n\n${sections.join("\n\n")}\n\n${disclaimer}${memoryUsageInstruction}\n</unison-context>`
 }
 
 function countUserTurns(messages: unknown[]): number {
@@ -98,27 +178,45 @@ export function buildRecallHandler(
 
 		const messages = Array.isArray(event.messages) ? event.messages : []
 		const turn = countUserTurns(messages)
-		const query = turn === 0 ? rawPrompt : stripInboundMetadata(rawPrompt)
+		const isNewSession = turn === 0
+		const includeProfile = isNewSession || turn % cfg.profileFrequency === 0
+		const messageProvider = ctx?.messageProvider as string | undefined
+		const query = isNewSession ? undefined : stripInboundMetadata(rawPrompt)
 
-		log.debug(`recalling for turn ${turn}`)
+		log.debug(
+			`recalling for turn ${turn} (profile: ${includeProfile}, newSession: ${isNewSession})`,
+		)
 
 		try {
-			const results = await client.search(query, cfg.maxRecallResults)
+			const profile = await client.getProfile(query)
 			const memoryContext = formatContext(
-				results,
+				includeProfile ? profile.static : [],
+				includeProfile ? profile.dynamic : [],
+				profile.searchResults,
 				cfg.maxRecallResults,
 				cfg.showMemoryUsage,
 			)
 
-			if (!memoryContext) {
-				log.debug("no brain data to inject")
+			const containerContext = formatContainerMetadata(cfg, messageProvider)
+
+			const contextParts: string[] = []
+			if (memoryContext) contextParts.push(memoryContext)
+			if (containerContext) {
+				contextParts.push(
+					`<unison-containers>\n${containerContext}\n</unison-containers>`,
+				)
+			}
+
+			if (contextParts.length === 0) {
+				log.debug("no profile data to inject")
 				return
 			}
 
+			const finalContext = contextParts.join("\n\n")
 			log.debug(
-				`injecting context (${memoryContext.length} chars, turn ${turn})`,
+				`injecting context (${finalContext.length} chars, turn ${turn})`,
 			)
-			return { prependContext: memoryContext }
+			return { prependContext: finalContext }
 		} catch (err) {
 			log.error("recall failed", err)
 			return

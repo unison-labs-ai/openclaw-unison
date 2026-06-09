@@ -15,7 +15,7 @@ export function registerForgetTool(
 			name: toolName,
 			label: "Brain Forget",
 			description:
-				"Forget/delete a specific brain document. Searches for the closest match and removes it.",
+				"Forget/delete a specific brain document. Provide a memoryId, a path, or a search query to find and remove the closest match.",
 			parameters: Type.Object({
 				query: Type.Optional(
 					Type.String({ description: "Describe the memory to forget" }),
@@ -23,11 +23,29 @@ export function registerForgetTool(
 				path: Type.Optional(
 					Type.String({ description: "Direct brain document path to delete" }),
 				),
+				memoryId: Type.Optional(
+					Type.String({ description: "Direct memory ID to delete" }),
+				),
 			}),
 			async execute(
 				_toolCallId: string,
-				params: { query?: string; path?: string },
+				params: { query?: string; path?: string; memoryId?: string },
 			) {
+				if (params.memoryId) {
+					log.debug(`forget tool: direct delete id="${params.memoryId}"`)
+					const result = await client.deleteMemory(params.memoryId)
+					return {
+						content: [
+							{
+								type: "text" as const,
+								text: result.deleted
+									? "Brain document forgotten."
+									: `No document found with id "${params.memoryId}".`,
+							},
+						],
+					}
+				}
+
 				if (params.path) {
 					log.debug(`forget tool: direct delete path="${params.path}"`)
 					await client.deleteDoc(params.path)
@@ -50,7 +68,7 @@ export function registerForgetTool(
 					content: [
 						{
 							type: "text" as const,
-							text: "Provide a query or path to forget.",
+							text: "Provide a query, path, or memoryId to forget.",
 						},
 					],
 				}

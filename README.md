@@ -31,7 +31,7 @@ Configure all options interactively: brain path prefix, auto-recall, auto-captur
 | Variable | Description |
 | -------- | ----------- |
 | `UNISON_TOKEN` | Your Unison API key (`usk_live_...`). Takes precedence over config file. |
-| `UNISON_API_URL` | Override the API base URL. Defaults to `https://api.unisonlabs.ai`. |
+| `UNISON_API_URL` | Override the API base URL. Defaults to `https://brain.unisonlabs.ai`. |
 
 ## How It Works
 
@@ -87,7 +87,7 @@ Or configure in `~/.openclaw/openclaw.json`:
 | Key                | Type      | Default                            | Description                                                        |
 | ------------------ | --------- | ---------------------------------- | ------------------------------------------------------------------ |
 | `apiKey`           | `string`  | —                                  | Unison API key (`usk_live_...`). Use `${UNISON_TOKEN}` to env-ref. |
-| `baseUrl`          | `string`  | `https://api.unisonlabs.ai`        | Override the API base URL.                                         |
+| `baseUrl`          | `string`  | `https://brain.unisonlabs.ai`        | Override the API base URL.                                         |
 | `brainPath`        | `string`  | `/private/openclaw_<hostname>`     | Root brain path prefix for all stored notes.                       |
 | `autoRecall`       | `boolean` | `true`                             | Inject relevant brain docs before every AI turn.                   |
 | `autoCapture`      | `boolean` | `true`                             | Store conversations after every turn.                              |
@@ -155,7 +155,7 @@ To use the Unison brain directly in Claude Desktop or other MCP hosts:
       "args": ["-y", "@unisonlabs/mcp"],
       "env": {
         "UNISON_TOKEN": "usk_live_...",
-        "UNISON_API_URL": "https://api.unisonlabs.ai"
+        "UNISON_API_URL": "https://brain.unisonlabs.ai"
       }
     }
   }
@@ -168,12 +168,12 @@ If you don't have a Unison account yet, you can provision one programmatically:
 
 ```bash
 # 1. Provision (sends OTP to your email)
-curl -X POST https://api.unisonlabs.ai/v1/auth/provision \
+curl -X POST https://brain.unisonlabs.ai/v1/auth/provision \
   -H "Content-Type: application/json" \
   -d '{"email":"you@example.com"}'
 
 # 2. Verify with the OTP from your email
-curl -X POST https://api.unisonlabs.ai/v1/auth/verify \
+curl -X POST https://brain.unisonlabs.ai/v1/auth/verify \
   -H "Content-Type: application/json" \
   -d '{"email":"you@example.com","code":"<OTP>"}'
 # Returns: {"verified":true,"apiKey":"usk_live_...","tenantId":"..."}

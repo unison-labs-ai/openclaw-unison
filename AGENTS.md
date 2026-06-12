@@ -39,7 +39,7 @@ openclaw gateway restart
 **Headless / CI (agent can run this):**
 ```bash
 # Provision an account (returns a usk_ key immediately)
-curl -X POST https://api.unisonlabs.ai/v1/auth/provision \
+curl -X POST https://brain.unisonlabs.ai/v1/auth/provision \
   -H "Content-Type: application/json" \
   -d '{"email":"you@example.com"}'
 # → {"apiKey":"usk_live_...","tenantId":"..."}

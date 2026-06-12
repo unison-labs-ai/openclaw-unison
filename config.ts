@@ -86,7 +86,7 @@ export function parseConfig(raw: unknown): UnisonConfig {
 	let baseUrl =
 		typeof cfg.baseUrl === "string" && cfg.baseUrl.length > 0
 			? cfg.baseUrl
-			: (process.env.UNISON_API_URL ?? "https://api.unisonlabs.ai")
+			: (process.env.UNISON_API_URL ?? "https://brain.unisonlabs.ai")
 	// Strip trailing slash
 	baseUrl = baseUrl.replace(/\/$/, "")
 

@@ -17,7 +17,7 @@ investigate. We'll credit reporters who want it once a fix ships.
 
 This repository is an **OpenClaw plugin** — open-source client code that calls
 the Unison brain API. It holds no secrets and is not a security boundary.
-Authentication, authorization, tenant isolation, and rate limiting are enforced
+Authentication, authorization, workspace isolation, and rate limiting are enforced
 **server-side** by the Unison brain API. Reports about this plugin are most useful
 when they concern:
 

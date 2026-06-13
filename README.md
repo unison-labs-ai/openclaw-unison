@@ -132,8 +132,8 @@ Or configure in `~/.openclaw/openclaw.json`:
 All notes are stored under the configured `brainPath`. The Unison brain enforces writeable root namespaces:
 
 - `/private/...` — visible only to you (default)
-- `/tenant/...` — visible to your entire team
-- `/teams/<slug>/...` — visible to a specific team
+- `/workspace/...` — visible to your entire workspace
+- `/workspace/teams/<slug>/...` — visible to a specific team
 
 Notes stored by this plugin are tagged `openclaw` and follow this structure:
 
@@ -176,7 +176,7 @@ curl -X POST https://brain.unisonlabs.ai/v1/auth/provision \
 curl -X POST https://brain.unisonlabs.ai/v1/auth/verify \
   -H "Content-Type: application/json" \
   -d '{"email":"you@example.com","code":"<OTP>"}'
-# Returns: {"verified":true,"apiKey":"usk_live_...","tenantId":"..."}
+# Returns: {"verified":true,"apiKey":"usk_live_...","workspaceId":"..."}
 ```
 
 ## License

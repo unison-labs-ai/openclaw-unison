@@ -42,7 +42,7 @@ openclaw gateway restart
 curl -X POST https://brain.unisonlabs.ai/v1/auth/provision \
   -H "Content-Type: application/json" \
   -d '{"email":"you@example.com"}'
-# → {"apiKey":"usk_live_...","tenantId":"..."}
+# → {"apiKey":"usk_live_...","workspaceId":"..."}
 
 export UNISON_TOKEN="usk_live_..."
 ```
@@ -84,8 +84,8 @@ Auth header on every request: `Authorization: Bearer <usk_key>`.
 
 Brain path namespaces:
 - `/private/...` — visible only to the key owner (default)
-- `/tenant/...` — visible to the whole Unison workspace
-- `/teams/<slug>/...` — visible to a specific team
+- `/workspace/...` — visible to the whole Unison workspace
+- `/workspace/teams/<slug>/...` — visible to a specific team
 
 ---
 

@@ -1,6 +1,31 @@
-# OpenClaw Unison Plugin
+<div align="center">
 
-Long-term memory for OpenClaw, powered by the [Unison brain](https://unisonlabs.ai). Automatically searches your brain before every AI turn, captures conversations for long-term recall, and exposes tools for the AI to read and write to your knowledge graph — no local infrastructure required.
+<img src="https://raw.githubusercontent.com/unison-labs-ai/unison-brain/main/assets/brain.svg" width="140" />
+
+# openclaw-unison
+
+**Long-term memory for OpenClaw — so it stops asking what you already told it.**
+
+Powered by the [Unison brain](https://unisonlabs.ai). Auto-recalls relevant context before every AI turn, captures conversations for long-term recall, and gives the AI tools to read and write your knowledge graph — no local infrastructure required.
+
+[![CI](https://github.com/unison-labs-ai/openclaw-unison/actions/workflows/ci.yml/badge.svg)](https://github.com/unison-labs-ai/openclaw-unison/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![Stars](https://img.shields.io/github/stars/unison-labs-ai/openclaw-unison?style=social)](https://github.com/unison-labs-ai/openclaw-unison)
+
+[**Why**](#with-unison-vs-without) • [**Install**](#install) • [**Setup**](#setup) • [**Commands**](#cli-commands) • [**Config**](#configuration)
+
+</div>
+
+---
+
+### With Unison vs. without
+
+| Without Unison | With Unison |
+|---|---|
+| OpenClaw forgets your stack, preferences, and prior decisions the moment the session ends | Every conversation is written to the brain; the next session picks up exactly where you left off |
+| You re-explain the same architecture, conventions, and context over and over | Auto-recall injects semantically matched notes before every AI turn — the AI already knows |
+| "What did we decide about X?" → the AI guesses or asks you | `openclaw unison search "what did we decide about X"` → the actual decision, in one second |
+| Memory is trapped in one machine and one tool | Cloud brain: same context on any machine, shareable with your team via `/tenant/...` paths |
 
 ## Install
 
@@ -179,6 +204,40 @@ curl -X POST https://brain.unisonlabs.ai/v1/auth/verify \
 # Returns: {"verified":true,"apiKey":"usk_live_...","workspaceId":"..."}
 ```
 
+## Star history
+
+If this saves you from re-explaining your stack one more time, a star helps others find it.
+
+<div align="center">
+
+<a href="https://star-history.com/#unison-labs-ai/openclaw-unison&Date">
+  <img src="https://api.star-history.com/svg?repos=unison-labs-ai/openclaw-unison&type=Date" width="600" />
+</a>
+
+</div>
+
 ## License
 
 MIT — see [LICENSE](LICENSE).
+
+---
+
+## Part of the Unison Labs constellation
+
+**One brain, every agent.** Every repo below reads from _and writes to_ the same [Unison brain](https://unisonlabs.ai) — no per-tool memory silos.
+
+| Repo | What it does |
+|---|---|
+| [unison-brain](https://github.com/unison-labs-ai/unison-brain) | CLI · SDK · MCP server — the core |
+| [claude-unison](https://github.com/unison-labs-ai/claude-unison) | Memory for Claude Code |
+| [cursor-unison](https://github.com/unison-labs-ai/cursor-unison) | Memory for Cursor |
+| [codex-unison](https://github.com/unison-labs-ai/codex-unison) | Memory for OpenAI Codex CLI |
+| [opencode-unison](https://github.com/unison-labs-ai/opencode-unison) | Memory for OpenCode |
+| **[openclaw-unison](https://github.com/unison-labs-ai/openclaw-unison)** | **Memory for OpenClaw ← you are here** |
+| [pipecat-unison](https://github.com/unison-labs-ai/pipecat-unison) | Memory for Pipecat voice agents |
+| [python-sdk](https://github.com/unison-labs-ai/python-sdk) | Python SDK for the brain |
+| [install-mcp](https://github.com/unison-labs-ai/install-mcp) | One-command MCP installer |
+| [code-chunk](https://github.com/unison-labs-ai/code-chunk) | AST-aware code chunking |
+| [unison-fs](https://github.com/unison-labs-ai/unison-fs) | Mount the brain as a filesystem |
+| [backchannel](https://github.com/unison-labs-ai/backchannel) | Async messaging between agents |
+| [Unison-evals](https://github.com/unison-labs-ai/Unison-evals) | Open memory benchmark suite |

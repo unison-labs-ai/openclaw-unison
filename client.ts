@@ -92,7 +92,7 @@ export class UnisonBrainClient {
 		const doc = await this.client.write({
 			path: notePath,
 			bodyMd: content,
-			kind: "note",
+			kind: "wiki_page",
 			tags: [
 				"openclaw",
 				...(metadata?.source ? [`source:${String(metadata.source)}`] : []),
@@ -114,7 +114,7 @@ export class UnisonBrainClient {
 		const doc = await this.client.write({
 			path,
 			bodyMd,
-			kind: "note",
+			kind: "wiki_page",
 			...(title ? { title } : {}),
 			tags: ["openclaw"],
 			source: { kind: "manual", ref: "openclaw-unison" },

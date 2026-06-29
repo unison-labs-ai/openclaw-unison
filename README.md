@@ -25,7 +25,7 @@ Powered by the [Unison brain](https://unisonlabs.ai). Auto-recalls relevant cont
 | OpenClaw forgets your stack, preferences, and prior decisions the moment the session ends | Every conversation is written to the brain; the next session picks up exactly where you left off |
 | You re-explain the same architecture, conventions, and context over and over | Auto-recall injects semantically matched notes before every AI turn — the AI already knows |
 | "What did we decide about X?" → the AI guesses or asks you | `openclaw unison search "what did we decide about X"` → the actual decision, in one second |
-| Memory is trapped in one machine and one tool | Cloud brain: same context on any machine, shareable with your team via `/tenant/...` paths |
+| Memory is trapped in one machine and one tool | Cloud brain: same context on any machine, shareable with your team via `/workspace/...` paths |
 
 **Powered by the [Unison brain](https://github.com/unison-labs-ai/unison-brain#the-hard-part--what-every-memory-system-gets-wrong) — not a flat vector store.** Temporal facts that know *what changed when*, entity resolution that knows *who's who*, and one source of truth shared across every agent and teammate — Claude Code, Cursor, Codex, voice, your backend.
 
